@@ -1,9 +1,8 @@
 import streamlit as st
-from pdf2image import convert_from_bytes
+import fitz  # PyMuPDF
 from PIL import Image, ImageOps
 import pytesseract
 import io
-
 
 # Mã IMG2Txt và các phương thức convert PDF sang text
 
@@ -60,14 +59,16 @@ class IMG2Txt:
         output = self._construct_output()
         return output
 
-    # Các phương thức merge_blocks_para, merge_lines_block, merge_words_line, pre_clean_word_image và clean_text_blocks sẽ giữ nguyên
-
-
 # Hàm để chuyển đổi PDF thành hình ảnh từ file trong bộ nhớ
 def pdf_to_images(pdf_file):
-    images = convert_from_bytes(pdf_file.read())  # Sử dụng convert_from_bytes thay vì convert_from_path
+    pdf_document = fitz.open(stream=pdf_file, filetype="pdf")  # Open PDF
+    images = []
+    for page_num in range(pdf_document.page_count):
+        page = pdf_document.load_page(page_num)  # Get page
+        pix = page.get_pixmap()  # Render page to image
+        img = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
+        images.append(img)
     return images
-
 
 # Hàm chuyển đổi ảnh thành văn bản
 def convert_images_to_text(images):
@@ -81,14 +82,12 @@ def convert_images_to_text(images):
 
     return "\n\n".join(texts)
 
-
 # Hàm để chuyển đổi PDF thành văn bản và trả về file TXT dưới dạng str
 def pdf_to_text(pdf_file):
     images = pdf_to_images(pdf_file)
     text = convert_images_to_text(images)
 
     return text
-
 
 # Giao diện Streamlit
 def main():
@@ -122,6 +121,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
