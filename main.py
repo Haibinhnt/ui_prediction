@@ -63,7 +63,7 @@ class IMG2Txt:
     # Các phương thức merge_blocks_para, merge_lines_block, merge_words_line, pre_clean_word_image và clean_text_blocks sẽ giữ nguyên
 
 
-# Hàm để chuyển đổi PDF thành hình ảnh
+# Hàm để chuyển đổi PDF thành hình ảnh từ file trong bộ nhớ
 def pdf_to_images(pdf_file):
     images = convert_from_path(pdf_file)
     return images
@@ -82,7 +82,7 @@ def convert_images_to_text(images):
     return "\n\n".join(texts)
 
 
-# Hàm để chuyển đổi PDF thành văn bản và trả về file TXT dưới dạng stream
+# Hàm để chuyển đổi PDF thành văn bản và trả về file TXT dưới dạng str
 def pdf_to_text(pdf_file):
     images = pdf_to_images(pdf_file)
     text = convert_images_to_text(images)
@@ -98,8 +98,11 @@ def main():
     uploaded_file = st.file_uploader("Tải lên file PDF", type="pdf")
 
     if uploaded_file is not None:
+        # Đọc file PDF trực tiếp từ bộ nhớ (sử dụng io.BytesIO)
+        pdf_file = io.BytesIO(uploaded_file.read())
+
         # Chuyển đổi PDF sang văn bản
-        text = pdf_to_text(uploaded_file)
+        text = pdf_to_text(pdf_file)
 
         if text:
             # Hiển thị văn bản và cung cấp link tải về
@@ -119,6 +122,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
