@@ -1,5 +1,5 @@
 import streamlit as st
-from pdf2image import convert_from_path
+from pdf2image import convert_from_bytes
 from PIL import Image, ImageOps
 import pytesseract
 import io
@@ -65,7 +65,7 @@ class IMG2Txt:
 
 # Hàm để chuyển đổi PDF thành hình ảnh từ file trong bộ nhớ
 def pdf_to_images(pdf_file):
-    images = convert_from_path(pdf_file)
+    images = convert_from_bytes(pdf_file.read())  # Sử dụng convert_from_bytes thay vì convert_from_path
     return images
 
 
@@ -122,6 +122,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
