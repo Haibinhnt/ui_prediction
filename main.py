@@ -1,9 +1,8 @@
 import streamlit as st
-import os
 from pdf2image import convert_from_path
 from PIL import Image, ImageOps
 import pytesseract
-import string
+import io
 
 
 # Mã IMG2Txt và các phương thức convert PDF sang text
@@ -65,8 +64,8 @@ class IMG2Txt:
 
 
 # Hàm để chuyển đổi PDF thành hình ảnh
-def pdf_to_images(pdf_path):
-    images = convert_from_path(pdf_path)
+def pdf_to_images(pdf_file):
+    images = convert_from_path(pdf_file)
     return images
 
 
@@ -83,19 +82,12 @@ def convert_images_to_text(images):
     return "\n\n".join(texts)
 
 
-# Hàm để chuyển đổi PDF thành văn bản và lưu vào file
-def pdf_to_text(pdf_path, output_folder):
-    images = pdf_to_images(pdf_path)
+# Hàm để chuyển đổi PDF thành văn bản và trả về file TXT dưới dạng stream
+def pdf_to_text(pdf_file):
+    images = pdf_to_images(pdf_file)
     text = convert_images_to_text(images)
 
-    if not os.path.exists(output_folder):
-        os.makedirs(output_folder)
-
-    output_path = os.path.join(output_folder, os.path.splitext(os.path.basename(pdf_path))[0] + '.txt')
-    with open(output_path, 'w', encoding='utf-8') as f:
-        f.write(text)
-
-    return output_path
+    return text
 
 
 # Giao diện Streamlit
@@ -106,30 +98,27 @@ def main():
     uploaded_file = st.file_uploader("Tải lên file PDF", type="pdf")
 
     if uploaded_file is not None:
-        # Lưu file PDF tạm thời
-        input_folder = "./uploaded_pdfs"
-        if not os.path.exists(input_folder):
-            os.makedirs(input_folder)
-
-        pdf_path = os.path.join(input_folder, uploaded_file.name)
-        with open(pdf_path, "wb") as f:
-            f.write(uploaded_file.getbuffer())
-
         # Chuyển đổi PDF sang văn bản
-        output_folder = "./converted_texts"
-        txt_path = pdf_to_text(pdf_path, output_folder)
+        text = pdf_to_text(uploaded_file)
 
-        # Hiển thị đường dẫn file TXT đã chuyển đổi
-        st.success("Chuyển đổi thành công!")
-        st.download_button(
-            label="Tải file văn bản (.txt)",
-            data=open(txt_path, 'r').read(),
-            file_name=os.path.basename(txt_path),
-            mime="text/plain"
-        )
+        if text:
+            # Hiển thị văn bản và cung cấp link tải về
+            st.success("Chuyển đổi thành công!")
+            st.text_area("Văn bản đã chuyển đổi:", text, height=300)
+
+            # Cung cấp file TXT cho người dùng tải về
+            st.download_button(
+                label="Tải file văn bản (.txt)",
+                data=text,
+                file_name="converted_text.txt",
+                mime="text/plain"
+            )
+        else:
+            st.error("Không thể chuyển đổi văn bản từ PDF.")
 
 
 if __name__ == "__main__":
     main()
+
 
 
