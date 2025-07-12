@@ -1,0 +1,4 @@
+bctc=báo cáo tài chính
+hđqt=hội đồng quản trị
+tscđ=tài sản cố định
+ts=tài sản
